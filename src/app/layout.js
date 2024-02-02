@@ -2,7 +2,7 @@ import { IBM_Plex_Sans_KR } from 'next/font/google'
 import '@/app/globals.css'
 import Providers from '@/features/layout/Providers/Providers'
 import Intro from '@/features/layout/Intro/Intro'
-import Header from '@/components/layout/Header/Header'
+import Header from '@/features/layout/Header/Header'
 import SideNav from '@/features/layout/SideNav/SideNav'
 
 const ibmPlexSansKR = IBM_Plex_Sans_KR({ subsets: ['latin'], weight: '400' })
@@ -16,7 +16,7 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en">
       <body className={`${ibmPlexSansKR.className} p-5`}>
-        <Intro />
+        {/* <Intro /> */}
         <Providers>
           <Header />
           <div className="flex">
