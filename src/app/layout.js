@@ -1,9 +1,9 @@
 import { IBM_Plex_Sans_KR } from 'next/font/google'
 import '@/app/globals.css'
-import Providers from '@/features/layout/Providers/Providers'
-import Intro from '@/features/layout/Intro/Intro'
+import Providers from '@/components/layout/Providers/Providers'
+import Intro from '@/components/layout/Intro/Intro'
 import Header from '@/components/layout/Header/Header'
-import SideNav from '@/features/layout/SideNav/SideNav'
+import SideNav from '@/components/layout/SideNav/SideNav'
 
 const ibmPlexSansKR = IBM_Plex_Sans_KR({ subsets: ['latin'], weight: '400' })
 
