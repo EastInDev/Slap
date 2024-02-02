@@ -10,6 +10,7 @@ const DropdownCategories = () => {
 
   return (
     <select
+      name="category"
       defaultValue={'카테고리 선택'}
       className="select select-bordered w-full max-w-xs"
     >
