@@ -19,7 +19,7 @@ const Profile = () => {
   return (
     <div className="dropdown dropdown-end">
       <div tabIndex={0} role="button" className="btn m-1 h-8">
-        {session.user.name}
+        {session.user.nickname}
       </div>
       <ul
         tabIndex={0}

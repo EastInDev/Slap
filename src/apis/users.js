@@ -6,7 +6,7 @@ export const getUser = async (id, type) => {
       SELECT * FROM users WHERE sns_id = ${id} AND sns_type = ${type}
     `
 
-    return rows
+    return rows[0]
   } catch (error) {
     throw new Error(error.message)
   }

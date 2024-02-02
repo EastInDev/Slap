@@ -13,7 +13,7 @@ const handler = NextAuth({
     async signIn({ user: provideUser, account, profile }) {
       const user = await getUser(provideUser.id, account.provider)
 
-      if (user.length === 0) {
+      if (!user) {
         await createUser(provideUser, account)
       }
 
@@ -24,8 +24,14 @@ const handler = NextAuth({
     async jwt({ token, user }) {
       return { ...token, ...user }
     },
-    async session({ session, token, user }) {
-      session.user = token
+    async session({ session, token }) {
+      const user = await getUser(token.id, 'kakao')
+
+      session.user = {
+        id: user.id,
+        nickname: user.nickname,
+      }
+
       return session
     },
   },
