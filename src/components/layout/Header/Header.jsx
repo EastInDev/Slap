@@ -1,6 +1,6 @@
-import Search from '@/features/home/Search/Search'
+import Search from '@/features/layout/Search/Search'
 import Logo from '../Logo/Logo'
-import Profile from '@/features/home/Profile/Profile'
+import Profile from '@/features/layout/Profile/Profile'
 
 const Header = () => {
   return (
