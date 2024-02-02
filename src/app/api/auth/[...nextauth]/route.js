@@ -13,7 +13,7 @@ const handler = NextAuth({
     async signIn({ user: provideUser, account, profile }) {
       const user = await getUser(provideUser.id, account.provider)
 
-      if (!user) {
+      if (user.length === 0) {
         await createUser(provideUser, account)
       }
 

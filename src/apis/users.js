@@ -13,7 +13,6 @@ export const getUser = async (id, type) => {
 }
 
 export const createUser = async (user, account) => {
-  'use server'
   try {
     await sql`
       INSERT INTO users (sns_id, sns_type, nickname, role)
@@ -25,7 +24,6 @@ export const createUser = async (user, account) => {
 }
 
 export const loginUser = async (user, account) => {
-  'use server'
   try {
     await sql`
       UPDATE users 
