@@ -102,7 +102,7 @@ const GetPost = () => {
                   }}
                   onClick={() => vote(postGroup[0].id, post.vote_id)}
                 >
-                  <span className="px-3 py-2">{post.vote_text}</span>
+                  <span>{post.vote_text}</span>
                   <span className="px-3 py-2 ml-auto text-white bg-blue-500 rounded">
                     {isNaN(votePercentage) ? '0.00' : votePercentage.toFixed(2)}
                     %
