@@ -16,7 +16,7 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en">
       <body className={`${ibmPlexSansKR.className} p-5`}>
-        {/* <Intro /> */}
+        <Intro />
         <Providers>
           <Header />
           <div className="flex">
