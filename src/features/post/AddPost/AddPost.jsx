@@ -50,7 +50,7 @@ const AddPost = () => {
   return (
     <dialog id="my_modal_1" className="modal">
       <div className="modal-action">
-        <form method="dialog" action={handleVoteSubmit}>
+        <form action={handleVoteSubmit}>
           <div className="card bg-base-100 shadow-xl w-[400px]">
             <div className="card-body items-center text-center">
               <h2 className="card-title">투표 생성</h2>
