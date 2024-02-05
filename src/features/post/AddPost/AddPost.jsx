@@ -32,10 +32,14 @@ const AddPost = () => {
     if (voteText === '') {
       setErrorMessage('제목을 입력해주세요!')
       return
-    } else if (voteOptions.every((option) => option.trim() === '')) {
+    }
+
+    if (voteOptions.every((option) => option.trim() === '')) {
       setErrorMessage('최소 한 개의 투표 항목을 입력해주세요!')
       return
-    } else if (category === '') {
+    }
+
+    if (category === '') {
       setErrorMessage('카테고리를 선택해주세요!')
       return
     }

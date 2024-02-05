@@ -10,6 +10,7 @@ export const createPost = async ({
   userId,
 }) => {
   try {
+    console.time('포스트 생성 시간')
     const { rows } = await sql`
       INSERT INTO posts (title, content, created_at, updated_at, category_id, user_id)
       VALUES (${voteText}, ${content}, NOW(), NOW(), ${category}, ${userId})
@@ -22,6 +23,7 @@ export const createPost = async ({
           VALUES (${option}, ${rows[0].id})
         `
     })
+    console.timeEnd('포스트 생성 시간')
   } catch (error) {
     console.error('포스트 생성 실패:', error)
     return null
@@ -30,6 +32,7 @@ export const createPost = async ({
 
 export const getPosts = async () => {
   try {
+    console.time('포스트 조회 시간')
     const { rows } = await sql`
       SELECT 
         posts.id,
@@ -60,6 +63,7 @@ export const getPosts = async () => {
       ON
         votes.id = slaps.vote_id
     `
+    console.timeEnd('포스트 조회 시간')
     return rows
   } catch (error) {
     console.error('포스트 조회 실패:', error)
@@ -69,26 +73,13 @@ export const getPosts = async () => {
 
 export const addVote = async (post_id, vote_id, user_id) => {
   try {
-    const { rows } = await sql`
-      SELECT * FROM slaps
-      WHERE post_id = ${post_id} AND user_id = ${user_id}
-    `
-
-    if (rows.length > 0) {
-      console.log('이전 투표를 삭제하고 새로운 투표를 추가합니다.')
-
-      await sql`
-        DELETE FROM slaps
-        WHERE post_id = ${post_id} AND user_id = ${user_id}
-      `
-    }
-
+    console.time('투표 추가 시간')
     await sql`
       INSERT INTO slaps (post_id, vote_id, user_id, updated_at)
       VALUES (${post_id}, ${vote_id}, ${user_id}, NOW())
+      on conflict (post_id, user_id) do update set vote_id = ${vote_id}, updated_at = NOW()
     `
-
-    console.log('투표에 성공하였습니다.')
+    console.timeEnd('투표 추가 시간')
     return true
   } catch (error) {
     console.error('투표 추가 실패:', error)
