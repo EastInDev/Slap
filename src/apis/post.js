@@ -30,7 +30,7 @@ export const createPost = async ({
   }
 }
 
-export const getPosts = async () => {
+const getPosts = async () => {
   try {
     console.time('포스트 조회 시간')
     const { rows } = await sql`
@@ -83,6 +83,19 @@ export const addVote = async (post_id, vote_id, user_id) => {
     return true
   } catch (error) {
     console.error('투표 추가 실패:', error)
+    return null
+  }
+}
+
+export const getSlaps = async (user_id) => {
+  try {
+    const { rows } = await sql`
+      SELECT * FROM slaps WHERE user_id = ${user_id}
+    `
+
+    return rows
+  } catch (error) {
+    console.error('슬랩 조회 실패:', error)
     return null
   }
 }

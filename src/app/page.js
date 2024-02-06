@@ -1,12 +1,12 @@
 import Categories from '@/features/home/Categories/Categories'
-import GetPost from '@/features/post/GetPost/GetPost'
+import MainPost from '@/features/post/MainPost/MainPost'
 
 export default function Home() {
   return (
     <>
       <Categories />
       <br></br>
-      <GetPost />
+      <MainPost />
     </>
   )
 }
