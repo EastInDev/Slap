@@ -21,7 +21,7 @@ export default function RootLayout({ children }) {
           <Header />
           <div className="flex">
             <SideNav />
-            <div className="container w-3/4">{children}</div>
+            <div className="container w-3/4 p-6">{children}</div>
           </div>
         </Providers>
       </body>

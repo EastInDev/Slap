@@ -34,3 +34,15 @@ export const loginUser = async (user, account) => {
     throw new Error(error.message)
   }
 }
+
+export const updateProfile = async (id, nickname) => {
+  try {
+    await sql`
+      UPDATE users 
+      set nickname = ${nickname}
+      WHERE id = ${id}
+    `
+  } catch (error) {
+    throw new Error(error.message)
+  }
+}
