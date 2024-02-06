@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { getPosts, addVote } from '@/apis/post'
+import { getPosts, addPost } from '@/apis/post'
 import { groupBy } from 'lodash'
 import { useSession } from 'next-auth/react'
 
@@ -46,7 +46,7 @@ const GetPost = () => {
 
     console.log(`투표 항목 ${voteId}에 투표하였습니다.`)
 
-    const result = await addVote(postId, voteId, session.user.id)
+    const result = await addPost(postId, voteId, session.user.id)
     if (result) {
       console.log('투표에 성공하였습니다.')
       await fetchData()
