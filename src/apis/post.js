@@ -1,6 +1,7 @@
 'use server'
 
 import { sql } from '@vercel/postgres'
+import { unstable_noStore } from 'next/cache'
 
 export const createPost = async ({
   voteText,
@@ -30,7 +31,7 @@ export const createPost = async ({
   }
 }
 
-const getPosts = async () => {
+export const getPosts = async () => {
   try {
     console.time('포스트 조회 시간')
     const { rows } = await sql`
@@ -64,6 +65,7 @@ const getPosts = async () => {
         votes.id = slaps.vote_id
     `
     console.timeEnd('포스트 조회 시간')
+    console.log(rows.length)
     return rows
   } catch (error) {
     console.error('포스트 조회 실패:', error)
@@ -72,6 +74,7 @@ const getPosts = async () => {
 }
 
 export const addVote = async (post_id, vote_id, user_id) => {
+  unstable_noStore()
   try {
     console.time('투표 추가 시간')
     await sql`
