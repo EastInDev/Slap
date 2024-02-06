@@ -1,3 +1,5 @@
+'use server'
+
 import { sql } from '@vercel/postgres'
 
 export const getUser = async (id, type) => {
