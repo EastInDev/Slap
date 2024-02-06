@@ -71,7 +71,7 @@ export const getPosts = async () => {
   }
 }
 
-export const addPost = async (post_id, vote_id, user_id) => {
+export const addVote = async (post_id, vote_id, user_id) => {
   try {
     console.time('투표 추가 시간')
     await sql`

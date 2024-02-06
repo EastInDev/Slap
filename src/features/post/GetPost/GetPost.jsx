@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { getPosts, addPost } from '@/apis/post'
+import { getPosts, addVote } from '@/apis/post'
 import { groupBy } from 'lodash'
 import { useSession } from 'next-auth/react'
 
@@ -9,6 +9,7 @@ const GetPost = () => {
   const [posts, setPosts] = useState([])
   const [alertVisible, setAlertVisible] = useState(false)
   const { data: session } = useSession()
+  const [votes, setVotes] = useState([])
 
   useEffect(() => {
     fetchData()
@@ -32,6 +33,7 @@ const GetPost = () => {
       return acc
     }, {})
     setPosts(groupedData)
+    setVotes(Object.values(groupedData))
   }
 
   const vote = async (postId, voteId) => {
@@ -46,12 +48,25 @@ const GetPost = () => {
 
     console.log(`투표 항목 ${voteId}에 투표하였습니다.`)
 
-    const result = await addPost(postId, voteId, session.user.id)
+    // 일단 클라이언트에서 투표 수 업데이트
+    const newVotes = votes.map((postGroup) =>
+      postGroup.map((post) =>
+        post.post_id === postId && post.vote_id === voteId
+          ? { ...post, vote_count: post.vote_count + 1 }
+          : post,
+      ),
+    )
+    setVotes(newVotes)
+
+    // 백엔드에 투표 요청
+    const result = await addVote(postId, voteId, session.user.id)
     if (result) {
       console.log('투표에 성공하였습니다.')
       await fetchData()
     } else {
       console.error('투표에 실패하였습니다.')
+      // 실패했을 경우, 원래의 투표 상태로 롤백
+      setVotes(Object.values(posts))
     }
   }
 
