@@ -102,3 +102,28 @@ export const getSlaps = async (user_id) => {
     return null
   }
 }
+
+export const addLike = async (user_id) => {
+  try {
+    await sql`
+      INSERT INTO likes (is_like, comment_id, user_id)
+      VALUES (true, 1, ${user_id})
+    `
+    return true
+  } catch (error) {
+    console.error('좋아요 추가 실패:', error)
+    return null
+  }
+}
+
+export const removeLike = async (user_id) => {
+  try {
+    await sql`
+      DELETE FROM likes WHERE user_id = ${user_id}
+    `
+    return true
+  } catch (error) {
+    console.error('좋아요 삭제 실패:', error)
+    return null
+  }
+}
