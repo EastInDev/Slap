@@ -6,20 +6,24 @@ import { addVote, getPosts } from '@/apis/post'
 import { produce } from 'immer'
 import Post from '@/features/post/MainPost/Post'
 import NotLoginDialog from '@/components/Dialog/NotLoginDialog'
+import usePosts from '@/hooks/usePosts'
 
 const MainPost = () => {
   const { data: session } = useSession()
-  const [posts, setPosts] = useState([])
+  // const [posts, setPosts] = useState([])
 
-  useEffect(() => {
-    const fetchData = async () => {
-      const res = await getPosts(session?.user?.id)
 
-      setPosts(res)
-    }
+  // useEffect(() => {
+  //   const fetchData = async () => {
+  //     const res = await getPosts(session?.user?.id)
 
-    fetchData()
-  }, [session])
+  //     setPosts(res)
+  //   }
+
+  //   fetchData()
+  // }, [session])
+
+  const { posts, isLoading, isError, mutate } = usePosts();
 
   const handleVote = async (postId, voteId) => {
     if (!session || !session.user.id) {
@@ -51,10 +55,13 @@ const MainPost = () => {
       })
     })
 
-    setPosts(newPosts)
+    mutate(newPosts, { revalidate: false })
 
     await addVote(postId, voteId, session.user.id)
   }
+
+  if (isLoading) return <div>로딩 중...</div>
+  if (isError) return <div>에러 발생</div>
 
   return (
     <div className="grid grid-cols-2 gap-4">

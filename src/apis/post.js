@@ -31,7 +31,7 @@ export const createPost = async ({
   }
 }
 
-export const getPosts = async (id) => {
+export const getPosts = async (user_id) => {
   unstable_noStore()
   try {
     let result = []
@@ -66,7 +66,7 @@ export const getPosts = async (id) => {
         votes.id = slaps.vote_id
     `
 
-    if (!id) {
+    if (!user_id) {
       rows.forEach((post) => {
         const index = result.findIndex((r) => r.id === post.id)
 
@@ -110,7 +110,7 @@ export const getPosts = async (id) => {
 
     const { rows: slaps } = await sql`
       SELECT id, vote_id, post_id, user_id FROM slaps
-      WHERE user_id = ${id}
+      WHERE user_id = ${user_id}
     `
 
     rows.forEach((post) => {
