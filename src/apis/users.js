@@ -1,3 +1,5 @@
+'use server'
+
 import { sql } from '@vercel/postgres'
 
 export const getUser = async (id, type) => {
@@ -29,6 +31,18 @@ export const loginUser = async (user, account) => {
       UPDATE users 
       set last_login_time = now(), refresh_token = ${account.refresh_token} 
       WHERE sns_id = ${user.id} and sns_type = ${account.provider}
+    `
+  } catch (error) {
+    throw new Error(error.message)
+  }
+}
+
+export const updateProfile = async (id, nickname) => {
+  try {
+    await sql`
+      UPDATE users 
+      set nickname = ${nickname}
+      WHERE id = ${id}
     `
   } catch (error) {
     throw new Error(error.message)
