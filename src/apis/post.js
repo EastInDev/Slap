@@ -32,10 +32,7 @@ export const createPost = async ({
 }
 
 export const getPosts = async (id) => {
-  if (!id) {
-    return []
-  }
-
+  unstable_noStore()
   try {
     let result = []
     const { rows } = await sql`
@@ -68,6 +65,48 @@ export const getPosts = async (id) => {
       ON
         votes.id = slaps.vote_id
     `
+
+    if (!id) {
+      rows.forEach((post) => {
+        const index = result.findIndex((r) => r.id === post.id)
+
+        if (index === -1) {
+          result.push({
+            id: post.id,
+            title: post.title,
+            content: post.content,
+            created_at: post.created_at,
+            updated_at: post.updated_at,
+            category_id: post.category_id,
+            user: {
+              id: post.user_id,
+              nickname: post.nickname,
+            },
+            isVote: false,
+            votes: post.vote_id
+              ? [
+                  {
+                    id: post.vote_id,
+                    text: post.vote_text,
+                    count: post.vote_count,
+                    thisVote: false,
+                  },
+                ]
+              : [],
+            total_count: post.total_vote_count,
+          })
+        } else {
+          result[index].votes.push({
+            id: post.vote_id,
+            text: post.vote_text,
+            count: post.vote_count,
+            thisVote: false,
+          })
+        }
+      })
+
+      return result
+    }
 
     const { rows: slaps } = await sql`
       SELECT id, vote_id, post_id, user_id FROM slaps
