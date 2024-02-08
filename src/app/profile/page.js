@@ -22,12 +22,17 @@ const UpdateDialog = () => {
 }
 
 export default function Profile() {
-  const { data: session, status } = useSession()
+  const { data: session, status, update } = useSession()
   const { register, handleSubmit, setValue } = useForm()
 
-  const onSubmit = async (data) => {
-    await updateProfile(session.user.id, data.nickname)
+  const showModal = () => {
     document.getElementById('profileUpdatedDialog').showModal()
+  }
+
+  const onSubmit = async (data) => {
+    update({ nickname: data.nickname })
+    await updateProfile(session.user.id, data.nickname)
+    showModal()
   }
 
   useEffect(() => {

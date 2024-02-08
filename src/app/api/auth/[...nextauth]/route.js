@@ -21,15 +21,22 @@ const handler = NextAuth({
 
       return true
     },
-    async jwt({ token, user }) {
+    async jwt({ token, user, trigger, session }) {
+      if (trigger === "update" && session?.nickname) {
+        token.name = session.nickname
+      }
       return { ...token, ...user }
     },
-    async session({ session, token }) {
+    async session({ session, token, trigger, newSession }) {
       const user = await getUser(token.id, 'kakao')
 
       session.user = {
         id: user.id,
         nickname: user.nickname,
+      }
+
+      if (trigger === "update" && newSession?.name) {
+        session.name = newSession.name
       }
 
       return session
