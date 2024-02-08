@@ -31,11 +31,15 @@ export const createPost = async ({
   }
 }
 
-export const getPosts = async () => {
+export const getPosts = async (id) => {
+  if (!id) {
+    return []
+  }
+
   try {
-    console.time('포스트 조회 시간')
+    let result = []
     const { rows } = await sql`
-      SELECT 
+      SELECT
         posts.id,
         posts.title,
         posts.content,
@@ -49,24 +53,71 @@ export const getPosts = async () => {
         votes.post_id,
         COUNT(slaps.id) OVER (PARTITION BY votes.id) AS vote_count,
         COUNT(slaps.id) OVER (PARTITION BY posts.id) AS total_vote_count
-      FROM 
+      FROM
         posts
-      LEFT JOIN 
+      LEFT JOIN
         votes
-      ON 
+      ON
         posts.id = votes.post_id
-      LEFT JOIN 
+      LEFT JOIN
         users
-      ON 
+      ON
         posts.user_id = users.id
       LEFT JOIN
         slaps
       ON
         votes.id = slaps.vote_id
     `
-    console.timeEnd('포스트 조회 시간')
-    console.log(rows.length)
-    return rows
+
+    const { rows: slaps } = await sql`
+      SELECT id, vote_id, post_id, user_id FROM slaps
+      WHERE user_id = ${id}
+    `
+
+    rows.forEach((post) => {
+      const index = result.findIndex((r) => r.id === post.id)
+
+      if (index === -1) {
+        result.push({
+          id: post.id,
+          title: post.title,
+          content: post.content,
+          created_at: post.created_at,
+          updated_at: post.updated_at,
+          category_id: post.category_id,
+          user: {
+            id: post.user_id,
+            nickname: post.nickname,
+          },
+          isVote: slaps.some((slap) => slap.post_id === post.id),
+          votes: post.vote_id
+            ? [
+                {
+                  id: post.vote_id,
+                  text: post.vote_text,
+                  count: post.vote_count,
+                  thisVote: slaps.find((slap) => slap.post_id === post.id)
+                    ? slaps.find((slap) => slap.post_id === post.id).vote_id ===
+                      post.vote_id
+                    : null,
+                },
+              ]
+            : [],
+          total_count: post.total_vote_count,
+        })
+      } else {
+        result[index].votes.push({
+          id: post.vote_id,
+          text: post.vote_text,
+          count: post.vote_count,
+          thisVote: slaps.find((slap) => slap.post_id === post.id)
+            ? slaps.find((slap) => slap.post_id === post.id).vote_id ===
+              post.vote_id
+            : null,
+        })
+      }
+    })
+    return result
   } catch (error) {
     console.error('포스트 조회 실패:', error)
     return null
