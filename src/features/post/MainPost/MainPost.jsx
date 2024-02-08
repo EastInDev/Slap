@@ -32,6 +32,7 @@ const MainPost = () => {
         if (post.id === postId) {
           if (!post.isVote) {
             post.total_count++
+            post.isVote = true
           }
           post.votes.forEach((vote) => {
             if (vote.id === voteId) {
