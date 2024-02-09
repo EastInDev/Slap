@@ -15,13 +15,13 @@ export const metadata = {
 export default function RootLayout({ children }) {
   return (
     <html lang="en">
-      <body className={`${ibmPlexSansKR.className} min-h-dvh`}>
+      <body className={`${ibmPlexSansKR.className} h-full`}>
         <Intro />
         <Providers>
           <Header />
           <div className="h-[calc(100dvh-100px)]">
             <SideNav />
-            <div className="container w-[calc(80dvw-24px)] p-6 ml-[20dvw] mt-[100px]">
+            <div className="container overflow-hidden h-full w-[calc(80dvw-24px)] p-6 ml-[20dvw] mt-[100px]">
               {children}
             </div>
           </div>

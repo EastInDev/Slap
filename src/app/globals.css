@@ -28,3 +28,7 @@
 .category::-webkit-scrollbar {
   display: none;
 }
+
+.scrollLayout::-webkit-scrollbar {
+  display: none;
+}
