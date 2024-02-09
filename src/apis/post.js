@@ -65,6 +65,10 @@ export const getPosts = async (user_id) => {
       ON
         votes.id = slaps.vote_id
     `
+    const { rows: likes } = await sql`
+      SELECT post_id, user_id, COUNT(*) as like_count FROM likes
+      GROUP BY post_id, user_id
+    `
 
     if (!user_id) {
       rows.forEach((post) => {
@@ -94,6 +98,8 @@ export const getPosts = async (user_id) => {
                 ]
               : [],
             total_count: post.total_vote_count,
+            likesCount:
+              likes.find((like) => like.post_id === post.id)?.like_count || 0,
           })
         } else {
           result[index].votes.push({
@@ -115,7 +121,7 @@ export const getPosts = async (user_id) => {
 
     rows.forEach((post) => {
       const index = result.findIndex((r) => r.id === post.id)
-
+      console.log(result)
       if (index === -1) {
         result.push({
           id: post.id,
@@ -143,6 +149,11 @@ export const getPosts = async (user_id) => {
               ]
             : [],
           total_count: post.total_vote_count,
+          isLiked: likes.some(
+            (like) => like.post_id === post.id && like.user_id === user_id,
+          ),
+          likesCount:
+            likes.find((like) => like.post_id === post.id)?.like_count || 0,
         })
       } else {
         result[index].votes.push({
@@ -180,24 +191,12 @@ export const addVote = async (post_id, vote_id, user_id) => {
   }
 }
 
-export const getSlaps = async (user_id) => {
-  try {
-    const { rows } = await sql`
-      SELECT * FROM slaps WHERE user_id = ${user_id}
-    `
-
-    return rows
-  } catch (error) {
-    console.error('슬랩 조회 실패:', error)
-    return null
-  }
-}
-
-export const addLike = async (user_id) => {
+export const addLike = async (user_id, post_id) => {
+  unstable_noStore()
   try {
     await sql`
-      INSERT INTO likes (is_like, comment_id, user_id)
-      VALUES (true, 1, ${user_id})
+      INSERT INTO likes (comment_id, user_id, post_id)
+      VALUES (1, ${user_id}, ${post_id})
     `
     return true
   } catch (error) {
@@ -206,10 +205,11 @@ export const addLike = async (user_id) => {
   }
 }
 
-export const removeLike = async (user_id) => {
+export const removeLike = async (user_id, post_id) => {
+  unstable_noStore()
   try {
     await sql`
-      DELETE FROM likes WHERE user_id = ${user_id}
+      DELETE FROM likes WHERE post_id = ${post_id} AND user_id = ${user_id}
     `
     return true
   } catch (error) {
