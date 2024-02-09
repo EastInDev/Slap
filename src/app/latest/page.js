@@ -81,7 +81,10 @@ export default function Latest() {
         </div>
       ))}
 
-      <div className="skeleton mt-20 w-full h-32" ref={sentryRef} />
+      <div
+        className="skeleton mt-20 w-full h-[calc(calc(100dvh-100px)*0.8)]"
+        ref={sentryRef}
+      />
     </div>
   )
 }
