@@ -45,7 +45,7 @@ const SideNav = () => {
   const { data: session } = useSession()
 
   return (
-    <div className="w-1/4 border-r-2 h-full">
+    <div className="fixed bg-base-100 top-[100px] w-[20dvw] border-r-2 min-h-full">
       <SlapMenu />
       <div className="divider"></div>
       {session ? <MyMenu /> : null}
