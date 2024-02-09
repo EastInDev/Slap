@@ -7,7 +7,7 @@ import Icons from '@/features/layout/Icons/Icons'
 
 const Header = () => {
   return (
-    <header className="flex justify-between h-20">
+    <header className="flex justify-between h-20 p-5">
       <Logo />
       <Search />
       <div className="flex align-middle">
