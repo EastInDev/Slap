@@ -19,8 +19,6 @@ export default function Popular() {
     setSize: setPage,
   } = useSWRInfinite(getKey, (page) => getPopularPosts({ page }))
 
-  console.log(data)
-
   const dataList = useMemo(() => {
     if (!data) return []
 
@@ -40,10 +38,12 @@ export default function Popular() {
       {data &&
         data.map((page, i) => (
           <div key={i}>
-            {page.map((post) => (
+            {page.map((post, post_index) => (
               <div
                 key={post.id}
-                className="card w-full h-[calc(calc(100dvh-100px)*0.8)] mt-20 bg-base-100 shadow-xl"
+                className={`card w-full h-[calc(calc(100dvh-100px)*0.8)] bg-base-100 shadow-xl ${
+                  i === 0 && post_index === 0 ? ' mt-6' : ' mt-20'
+                }`}
               >
                 <div className="card-body">
                   <h2 className="card-title">{post.title}</h2>

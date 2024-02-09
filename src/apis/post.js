@@ -297,6 +297,7 @@ export const getLatestPosts = async ({ page }) => {
         posts.created_at DESC
       LIMIT 10
     `
+
     rows.forEach((post) => {
       const index = result.findIndex((r) => r.id === post.id)
 
