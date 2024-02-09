@@ -217,3 +217,98 @@ export const removeLike = async (user_id, post_id) => {
     return null
   }
 }
+
+export const addComment = async (
+  content,
+  post_id,
+  user_id,
+  comment_id = null,
+) => {
+  unstable_noStore()
+  try {
+    await sql`
+      INSERT INTO comments (content, created_at, updated_at, post_id, user_id, comment_id, is_reply)
+      VALUES (${content}, NOW(), NOW(), ${post_id}, ${user_id}, ${comment_id}, ${
+      comment_id ? true : false
+    })
+    `
+    return true
+  } catch (error) {
+    console.error('댓글 추가 실패:', error)
+    return null
+  }
+}
+
+export const getCommentsAndReplies = async (post_id) => {
+  unstable_noStore()
+  try {
+    const { rows } = await sql`
+      SELECT
+        c1.id,
+        c1.content,
+        c1.created_at,
+        c1.updated_at,
+        c1.user_id,
+        u1.nickname,
+        c2.id as reply_id,
+        c2.content as reply_content,
+        c2.created_at as reply_created_at,
+        c2.updated_at as reply_updated_at,
+        c2.user_id as reply_user_id,
+        u2.nickname as reply_nickname
+      FROM
+        comments c1
+      LEFT JOIN
+        users u1
+      ON
+        c1.user_id = u1.id
+      LEFT JOIN
+        comments c2
+      ON
+        c1.id = c2.comment_id AND c2.is_reply = true
+      LEFT JOIN
+        users u2
+      ON
+        c2.user_id = u2.id
+      WHERE
+        c1.post_id = ${post_id} AND c1.is_reply = false
+    `
+
+    const comments = []
+    const replies = {}
+
+    for (let row of rows) {
+      if (!replies[row.id]) {
+        replies[row.id] = []
+      }
+
+      if (row.reply_id) {
+        replies[row.id].push({
+          id: row.reply_id,
+          content: row.reply_content,
+          created_at: row.reply_created_at,
+          updated_at: row.reply_updated_at,
+          user_id: row.reply_user_id,
+          nickname: row.reply_nickname,
+        })
+      }
+
+      if (!comments.some((comment) => comment.id === row.id)) {
+        comments.push({
+          id: row.id,
+          content: row.content,
+          created_at: row.created_at,
+          updated_at: row.updated_at,
+          user_id: row.user_id,
+          nickname: row.nickname,
+          replies: replies[row.id],
+        })
+      }
+    }
+
+    return comments
+  } catch (error) {
+    console.error('댓글 조회 실패:', error)
+    return null
+  }
+}

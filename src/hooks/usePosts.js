@@ -5,7 +5,7 @@ import useSWR from 'swr'
 export default function usePosts() {
   const { data: session } = useSession()
   const { data: posts = [], ...res } = useSWR(
-    '/api/post',
+    '/api/post' + session?.user?.id,
     () => getPosts(session?.user?.id),
     {
       revalidateIfStale: false,

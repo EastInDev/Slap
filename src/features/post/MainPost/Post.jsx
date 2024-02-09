@@ -1,10 +1,15 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useSession } from 'next-auth/react'
-import { addLike, removeLike } from '@/apis/post'
-import { Heart, Star, MessageSquareText } from 'lucide-react'
-import { set } from 'lodash'
+import {
+  addLike,
+  removeLike,
+  addComment,
+  getCommentsAndReplies,
+} from '@/apis/post'
+import { Heart, MessageSquareText } from 'lucide-react'
+import CommentDialog from '@/components/Dialog/CommentDialog'
 
 const formatVoteCount = (count) => {
   if (count >= 1000) {
@@ -38,6 +43,8 @@ const Post = ({ post, handleVote }) => {
   const { data: session } = useSession()
   const [isLiked, setIsLiked] = useState(post.isLiked)
   const [likesCount, setLikesCount] = useState(post.likesCount)
+  const [newComment, setNewComment] = useState('')
+  const [comments, setComments] = useState([])
 
   const handleLike = async () => {
     if (!session || !session.user.id) {
@@ -60,12 +67,32 @@ const Post = ({ post, handleVote }) => {
     }
   }
 
-  const handleFavorite = () => {
-    console.log('즐겨찾기 버튼 클릭')
+  const handleComment = () => {
+    document.getElementById(`commentModal_${post.id}`).showModal()
   }
 
-  const handleComment = () => {
-    console.log('댓글 버튼 클릭')
+  const fetchComments = useCallback(async () => {
+    const fetchedComments = await getCommentsAndReplies(post.id)
+    setComments(fetchedComments)
+  }, [post.id])
+
+  useEffect(() => {
+    fetchComments()
+  }, [fetchComments])
+
+  const handleCommentSubmit = async (event, comment_id) => {
+    event.preventDefault()
+    console.log('comment_id:', comment_id)
+    const result = await addComment(
+      newComment,
+      post.id,
+      session.user.id,
+      comment_id,
+    )
+    if (result) {
+      setNewComment('')
+      fetchComments()
+    }
   }
 
   return (
@@ -77,9 +104,6 @@ const Post = ({ post, handleVote }) => {
             {timeAgo(post.created_at)}
           </span>
         </div>
-        <button onClick={handleFavorite} className="btn text-yellow-500">
-          <Star />
-        </button>
       </div>
       <h2 className="text-xl font-bold">{post.title}</h2>
       <p className="mt-2">{post.content}</p>
@@ -116,6 +140,14 @@ const Post = ({ post, handleVote }) => {
         <MessageSquareText />
       </button>
       <p className="mt-2">좋아요 {likesCount || '0'}개</p>
+      <CommentDialog
+        comments={comments}
+        post={post}
+        newComment={newComment}
+        handleCommentSubmit={handleCommentSubmit}
+        setNewComment={setNewComment}
+        timeAgo={timeAgo}
+      />
     </div>
   )
 }
