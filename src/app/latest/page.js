@@ -58,7 +58,7 @@ export default function Latest() {
               const votePercentage =
                 (parseInt(vote.count) / (parseInt(post.total_count) || 1)) * 100
               return (
-                <div key={i} className="mt-2 flex items-center">
+                <div key={post.id + vote.id} className="mt-2 flex items-center">
                   <button
                     className="btn relative w-full text-left"
                     style={{
