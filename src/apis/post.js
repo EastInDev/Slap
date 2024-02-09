@@ -163,6 +163,21 @@ export const getPosts = async (user_id) => {
   }
 }
 
+export const getMyPosts = async (user_id) => {
+  unstable_noStore()
+  try {
+    const { rows } = await sql`
+      SELECT * FROM posts
+      WHERE user_id = ${user_id}
+    `
+
+    return rows
+  } catch (error) {
+    console.error('내 포스트 조회 실패:', error)
+    return null
+  }
+}
+
 export const addVote = async (post_id, vote_id, user_id) => {
   unstable_noStore()
   try {
