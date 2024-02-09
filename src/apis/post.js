@@ -22,6 +22,7 @@ export const createPost = async ({
       await sql`
           INSERT INTO votes (text, post_id)
           VALUES (${option}, ${rows[0].id})
+          on conflict (text, post_id) do nothing
         `
     })
     console.timeEnd('포스트 생성 시간')
