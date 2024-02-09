@@ -164,7 +164,21 @@ export const getPosts = async (user_id) => {
   }
 }
 
-export const getPopularPosts = async () => {
+export const getCountPosts = async () => {
+  unstable_noStore()
+  try {
+    const { rows } = await sql`
+      SELECT COUNT(*) FROM posts
+    `
+
+    return rows[0].count
+  } catch (error) {
+    console.error('포스트 수 조회 실패:', error)
+    return null
+  }
+}
+
+export const getPopularPosts = async ({ page }) => {
   unstable_noStore()
   try {
     let result = []

@@ -19,9 +19,11 @@ export default function RootLayout({ children }) {
         <Intro />
         <Providers>
           <Header />
-          <div className="flex h-[calc(100dvh-100px)]">
+          <div className="h-[calc(100dvh-100px)]">
             <SideNav />
-            <div className="container w-3/4 p-6">{children}</div>
+            <div className="container w-[calc(80dvw-24px)] p-6 ml-[20dvw] mt-[100px]">
+              {children}
+            </div>
           </div>
         </Providers>
       </body>
