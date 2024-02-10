@@ -1,7 +1,6 @@
 'use client'
 
 import { signIn, signOut, useSession } from 'next-auth/react'
-import Link from 'next/link'
 
 const Profile = () => {
   const { data: session } = useSession()
@@ -20,7 +19,7 @@ const Profile = () => {
   return (
     <div className="dropdown dropdown-end">
       <div tabIndex={0} role="button" className="btn m-1 h-8">
-        {session.user.nickname}
+        {session.user.name}
       </div>
       <ul
         tabIndex={0}
@@ -30,7 +29,7 @@ const Profile = () => {
           <a onClick={() => signOut()}>로그아웃</a>
         </li>
         <li>
-          <Link href="/profile">프로필 수정</Link>
+          <a>프로필 수정</a>
         </li>
       </ul>
     </div>
