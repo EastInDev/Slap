@@ -1,0 +1,19 @@
+import { getPosts } from '@/apis/post'
+import { useSession } from 'next-auth/react'
+import useSWR from 'swr'
+
+export default function usePosts() {
+  const { data: session } = useSession()
+  const { data: posts = [], ...res } = useSWR(
+    '/api/post' + session?.user?.id,
+    () => getPosts(session?.user?.id),
+    {
+      revalidateIfStale: false,
+    },
+  )
+
+  return {
+    posts,
+    ...res,
+  }
+}

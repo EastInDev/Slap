@@ -11,10 +11,15 @@
   "dependencies": {
     "@vercel/postgres": "^0.7.2",
     "axios": "^1.6.7",
-    "next": "14.1.0",
+    "immer": "^10.0.3",
+    "lodash": "^4.17.21",
+    "lucide": "^0.321.0",
+    "lucide-react": "^0.321.0",
+    "next": "14.0.4",
     "next-auth": "^4.24.5",
     "react": "^18",
     "react-dom": "^18",
+    "react-hook-form": "^7.50.0",
     "swr": "^2.2.4"
   },
   "devDependencies": {
