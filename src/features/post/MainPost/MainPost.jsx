@@ -1,8 +1,7 @@
 'use client'
 
-import { useEffect, useState } from 'react'
 import { useSession } from 'next-auth/react'
-import { addVote, getPosts } from '@/apis/post'
+import { addLike, addVote } from '@/apis/post'
 import { produce } from 'immer'
 import Post from '@/features/post/MainPost/Post'
 import NotLoginDialog from '@/components/Dialog/NotLoginDialog'
@@ -10,20 +9,7 @@ import usePosts from '@/hooks/usePosts'
 
 const MainPost = () => {
   const { data: session } = useSession()
-  // const [posts, setPosts] = useState([])
-
-
-  // useEffect(() => {
-  //   const fetchData = async () => {
-  //     const res = await getPosts(session?.user?.id)
-
-  //     setPosts(res)
-  //   }
-
-  //   fetchData()
-  // }, [session])
-
-  const { posts, isLoading, isError, mutate } = usePosts();
+  const { posts, isLoading, isError, mutate } = usePosts()
 
   const handleVote = async (postId, voteId) => {
     if (!session || !session.user.id) {

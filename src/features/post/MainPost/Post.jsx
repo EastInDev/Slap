@@ -1,9 +1,15 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useSession } from 'next-auth/react'
-import { addLike, removeLike } from '@/apis/post'
-import { Heart, Star, MessageSquareText } from 'lucide-react'
+import {
+  addLike,
+  removeLike,
+  addComment,
+  getCommentsAndReplies,
+} from '@/apis/post'
+import { Heart, MessageSquareText } from 'lucide-react'
+import CommentDialog from '@/components/Dialog/CommentDialog'
 
 const formatVoteCount = (count) => {
   if (count >= 1000) {
@@ -35,7 +41,10 @@ const timeAgo = (date) => {
 
 const Post = ({ post, handleVote }) => {
   const { data: session } = useSession()
-  const [isLiked, setIsLiked] = useState(false)
+  const [isLiked, setIsLiked] = useState(post.isLiked)
+  const [likesCount, setLikesCount] = useState(post.likesCount)
+  const [newComment, setNewComment] = useState('')
+  const [comments, setComments] = useState([])
 
   const handleLike = async () => {
     if (!session || !session.user.id) {
@@ -44,20 +53,46 @@ const Post = ({ post, handleVote }) => {
     }
 
     if (isLiked) {
-      setIsLiked(false)
-      await removeLike(post.user.id)
-      console.log('좋아요 취소')
+      const result = await removeLike(session.user.id, post.id)
+      if (result) {
+        setIsLiked(false)
+        setLikesCount(likesCount - 1)
+      }
     } else {
-      setIsLiked(true)
-      await addLike(post.user.id)
-      console.log('좋아요 추가')
+      const result = await addLike(session.user.id, post.id)
+      if (result) {
+        setIsLiked(true)
+        setLikesCount((isNaN(likesCount) ? 0 : likesCount) + 1)
+      }
     }
   }
-  const handleFavorite = () => {
-    console.log('즐겨찾기 버튼 클릭')
-  }
+
   const handleComment = () => {
-    console.log('댓글 버튼 클릭')
+    document.getElementById(`commentModal_${post.id}`).showModal()
+  }
+
+  const fetchComments = useCallback(async () => {
+    const fetchedComments = await getCommentsAndReplies(post.id)
+    setComments(fetchedComments)
+  }, [post.id])
+
+  useEffect(() => {
+    fetchComments()
+  }, [fetchComments])
+
+  const handleCommentSubmit = async (event, comment_id) => {
+    event.preventDefault()
+    console.log('comment_id:', comment_id)
+    const result = await addComment(
+      newComment,
+      post.id,
+      session.user.id,
+      comment_id,
+    )
+    if (result) {
+      setNewComment('')
+      fetchComments()
+    }
   }
 
   return (
@@ -69,9 +104,6 @@ const Post = ({ post, handleVote }) => {
             {timeAgo(post.created_at)}
           </span>
         </div>
-        <button onClick={handleFavorite} className="btn text-yellow-500">
-          <Star />
-        </button>
       </div>
       <h2 className="text-xl font-bold">{post.title}</h2>
       <p className="mt-2">{post.content}</p>
@@ -101,11 +133,21 @@ const Post = ({ post, handleVote }) => {
         onClick={handleLike}
         className={`btn mt-2 mr-2 ${isLiked ? 'text-red-500' : ''}`}
       >
-        <Heart />
+        <Heart fill={isLiked ? '#ED0A3F' : ''} />
       </button>
+
       <button onClick={handleComment} className="btn text-green-500">
         <MessageSquareText />
       </button>
+      <p className="mt-2">좋아요 {likesCount || '0'}개</p>
+      <CommentDialog
+        comments={comments}
+        post={post}
+        newComment={newComment}
+        handleCommentSubmit={handleCommentSubmit}
+        setNewComment={setNewComment}
+        timeAgo={timeAgo}
+      />
     </div>
   )
 }
