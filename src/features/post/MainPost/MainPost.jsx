@@ -6,18 +6,11 @@ import { produce } from 'immer'
 import Post from '@/features/post/MainPost/Post'
 import NotLoginDialog from '@/components/Dialog/NotLoginDialog'
 import usePosts from '@/hooks/usePosts'
-import Categories from '@/features/home/Categories/Categories'
 import { useState } from 'react'
 
-const MainPost = () => {
+const MainPost = ({ selectedCategoryId }) => {
   const { data: session } = useSession()
-  const [selectedCategoryId, setSelectedCategoryId] = useState(null) // 선택된 카테고리의 id를 상태로 관리합니다.
   const { posts, isLoading, isError, mutate } = usePosts(selectedCategoryId) // 선택된 카테고리의 id를 usePosts 훅의 인자로 전달합니다.
-
-  const handleCategorySelect = (categoryId) => {
-    // 카테고리 선택 이벤트 핸들러
-    setSelectedCategoryId(categoryId)
-  }
 
   const handleVote = async (postId, voteId) => {
     if (!session || !session.user.id) {
@@ -60,7 +53,6 @@ const MainPost = () => {
   return (
     <div className="grid grid-cols-2 gap-4">
       <NotLoginDialog />
-      <Categories onCategorySelect={handleCategorySelect} />
       {posts.map((post, index) => (
         <Post key={post.id} post={post} handleVote={handleVote} />
       ))}

@@ -7,13 +7,14 @@ export default function usePosts(categoryId) {
   const fetcher = categoryId
     ? () => getCategoriesPosts(categoryId)
     : () => getPosts(session?.user?.id)
-  const { data: posts = [], ...res } = useSWR(
-    '/api/post' + session?.user?.id,
-    fetcher,
-    {
-      revalidateIfStale: false,
-    },
-  )
+
+  const swrKey = categoryId
+    ? ['/api/post', session?.user?.id, categoryId]
+    : ['/api/post', session?.user?.id]
+
+  const { data: posts = [], ...res } = useSWR(swrKey, fetcher, {
+    revalidateIfStale: false,
+  })
 
   return {
     posts,

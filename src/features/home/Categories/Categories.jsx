@@ -8,7 +8,7 @@ const Categories = ({ onCategorySelect }) => {
   if (isLoading) return <div>Loading...</div>
   if (isError) return <div>Error</div>
 
-  const handleClick = (categoryId) => {
+  const handleCategoryClick = (categoryId) => {
     onCategorySelect(categoryId)
   }
 
@@ -18,7 +18,7 @@ const Categories = ({ onCategorySelect }) => {
         <div
           key={index}
           className="btn btn-sm btn-active ml-4"
-          onClick={() => handleClick(category.id)}
+          onClick={() => handleCategoryClick(category.id)}
         >
           {category.name}
         </div>
