@@ -1,15 +1,18 @@
 'use client'
 import { useCallback, useMemo } from 'react'
+import { useSession } from 'next-auth/react'
+import { produce } from 'immer'
 import usePosts from '@/hooks/usePosts'
 import useSWR from 'swr'
 import useSWRInfinite from 'swr/infinite'
 import { getLatestPosts, getCountPosts } from '@/apis/post'
 import useInfiniteScroll from 'react-infinite-scroll-hook'
 import Post from '@/features/post/MainPost/Post'
+import { addVote } from '@/apis/post'
 
 export default function Latest() {
+  const { data: session } = useSession()
   const { data: count = 0 } = useSWR('api/latest', () => getCountPosts())
-  const { getPost, mutate } = usePosts()
 
   const handleVote = async (postId, voteId) => {
     if (!session || !session.user.id) {
@@ -18,26 +21,28 @@ export default function Latest() {
     }
 
     const newPosts = produce(posts, (draft) => {
-      draft.forEach((post) => {
-        if (post.id === postId) {
-          if (!post.isVote) {
-            post.total_count++
-            post.isVote = true
-          }
-          post.votes.forEach((vote) => {
-            if (vote.id === voteId) {
-              if (!vote.thisVote) {
-                vote.count++
-                vote.thisVote = true
-              }
-            } else {
-              if (vote.thisVote) {
-                vote.count--
-                vote.thisVote = false
-              }
+      draft.forEach((page) => {
+        page.forEach((post) => {
+          if (post.id === postId) {
+            if (!post.isVote) {
+              post.total_count++
+              post.isVote = true
             }
-          })
-        }
+            post.votes.forEach((vote) => {
+              if (vote.id === voteId) {
+                if (!vote.thisVote) {
+                  vote.count++
+                  vote.thisVote = true
+                }
+              } else {
+                if (vote.thisVote) {
+                  vote.count--
+                  vote.thisVote = false
+                }
+              }
+            })
+          }
+        })
       })
     })
 
@@ -56,6 +61,7 @@ export default function Latest() {
     isValidating,
     size: page,
     setSize: setPage,
+    mutate,
   } = useSWRInfinite(getKey, ({ keyword, page }) => getPopularPosts({ page }), {
     revalidateOnFocus: false,
     revalidateOnReconnect: false,

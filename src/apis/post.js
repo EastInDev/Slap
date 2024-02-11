@@ -190,7 +190,7 @@ export const getCountPosts = async () => {
 
 export const getPopularPosts = async ({ page }) => {
   unstable_noStore()
-  console.log('page:', page)
+  console.time('getPopularPosts')
   page++
   try {
     let result = []
@@ -270,6 +270,7 @@ export const getPopularPosts = async ({ page }) => {
       }
     })
 
+    console.timeEnd('getPopularPosts')
     return result
   } catch (error) {
     console.error('인기 포스트 조회 실패:', error)
