@@ -1,15 +1,16 @@
 'use client'
 
 import { useSession } from 'next-auth/react'
-import { addLike, addVote } from '@/apis/post'
+import { addVote } from '@/apis/post'
 import { produce } from 'immer'
 import Post from '@/features/post/MainPost/Post'
 import NotLoginDialog from '@/components/Dialog/NotLoginDialog'
 import usePosts from '@/hooks/usePosts'
+import { useState } from 'react'
 
-const MainPost = () => {
+const MainPost = ({ selectedCategoryId }) => {
   const { data: session } = useSession()
-  const { posts, isLoading, isError, mutate } = usePosts()
+  const { posts, isLoading, isError, mutate } = usePosts(selectedCategoryId) // 선택된 카테고리의 id를 usePosts 훅의 인자로 전달합니다.
 
   const handleVote = async (postId, voteId) => {
     if (!session || !session.user.id) {
