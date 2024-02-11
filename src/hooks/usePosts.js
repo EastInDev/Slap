@@ -1,19 +1,31 @@
-import { getPosts } from '@/apis/post'
+'use client'
+
+import { getPosts, getCategoriesPosts } from '@/apis/post'
+
 import { useSession } from 'next-auth/react'
 import useSWR from 'swr'
 
-export default function usePosts() {
+export default function usePosts(categoryId) {
   const { data: session } = useSession()
-  const { data: posts = [], ...res } = useSWR(
-    '/api/post' + session?.user?.id,
-    () => getPosts(session?.user?.id),
-    {
-      revalidateIfStale: false,
-    },
-  )
+  const fetcher = categoryId
+    ? () => getCategoriesPosts(categoryId)
+    : () => getPosts(session?.user?.id)
+
+  const swrKey = categoryId
+    ? ['/api/post', session?.user?.id, categoryId]
+    : ['/api/post', session?.user?.id]
+
+  const { data: posts = [], ...res } = useSWR(swrKey, fetcher, {
+    revalidateIfStale: false,
+  })
+
+  const getPost = (id) => {
+    return posts.find((post) => post.id === id)
+  }
 
   return {
     posts,
     ...res,
+    getPost,
   }
 }

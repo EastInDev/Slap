@@ -1,16 +1,17 @@
 'use client'
 
+import useMyLikes from '@/hooks/useMyLikes'
 import { useSession } from 'next-auth/react'
-import { addVote } from '@/apis/post'
-import { produce } from 'immer'
 import Post from '@/features/post/MainPost/Post'
 import NotLoginDialog from '@/components/Dialog/NotLoginDialog'
+import { produce } from 'immer'
+import { addVote } from '@/apis/post'
 import usePosts from '@/hooks/usePosts'
-import { useState } from 'react'
 
-const MainPost = ({ selectedCategoryId }) => {
+const MyLikes = () => {
   const { data: session } = useSession()
-  const { posts, isLoading, isError, mutate } = usePosts(selectedCategoryId) // 선택된 카테고리의 id를 usePosts 훅의 인자로 전달합니다.
+  const { likes, isLoading, error } = useMyLikes()
+  const { getPost } = usePosts()
 
   const handleVote = async (postId, voteId) => {
     if (!session || !session.user.id) {
@@ -48,16 +49,25 @@ const MainPost = ({ selectedCategoryId }) => {
   }
 
   if (isLoading) return <div>로딩 중...</div>
-  if (isError) return <div>에러 발생</div>
+  if (error) return <div>에러 발생</div>
 
   return (
-    <div className="grid grid-cols-2 gap-4">
+    <div>
       <NotLoginDialog />
-      {posts.map((post, index) => (
-        <Post key={post.id} post={post} handleVote={handleVote} />
+      {likes.map((like) => (
+        <div
+          key={like.id}
+          className="collapse collapse-plus border border-base-300 bg-base-200 mt-4"
+        >
+          <input type="checkbox" />
+          <div className="collapse-title text-xl font-medium">{like.title}</div>
+          <div className="collapse-content">
+            <Post post={getPost(like.post_id)} handleVote={handleVote} />
+          </div>
+        </div>
       ))}
     </div>
   )
 }
 
-export default MainPost
+export default MyLikes

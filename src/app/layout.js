@@ -8,8 +8,8 @@ import SideNav from '@/features/layout/SideNav/SideNav'
 const ibmPlexSansKR = IBM_Plex_Sans_KR({ subsets: ['latin'], weight: '400' })
 
 export const metadata = {
-  title: 'Slap',
-  description: 'Slap!!!',
+  title: 'Slap👏🏻',
+  description: 'Slap👏🏻',
 }
 
 export default function RootLayout({ children }) {

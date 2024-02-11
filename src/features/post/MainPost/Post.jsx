@@ -82,7 +82,6 @@ const Post = ({ post, handleVote }) => {
 
   const handleCommentSubmit = async (event, comment_id) => {
     event.preventDefault()
-    console.log('comment_id:', comment_id)
     const result = await addComment(
       newComment,
       post.id,
@@ -96,10 +95,10 @@ const Post = ({ post, handleVote }) => {
   }
 
   return (
-    <div className="p-4 border rounded shadow">
+    <div className="p-4 border rounded shadow h-full">
       <div className="flex justify-between items-start">
         <div>
-          <span className="text-lg text-white">{post.user.nickname}</span>
+          <span className="text-lg">{post.user.nickname}</span>
           <span className="text-sm text-gray-500 ml-2">
             {timeAgo(post.created_at)}
           </span>
@@ -147,6 +146,8 @@ const Post = ({ post, handleVote }) => {
         handleCommentSubmit={handleCommentSubmit}
         setNewComment={setNewComment}
         timeAgo={timeAgo}
+        handleVote={handleVote}
+        formatVoteCount={formatVoteCount}
       />
     </div>
   )
