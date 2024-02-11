@@ -95,7 +95,7 @@ const Post = ({ post, handleVote }) => {
   }
 
   return (
-    <div className="p-4 border rounded shadow">
+    <div className="p-4 border rounded shadow h-full">
       <div className="flex justify-between items-start">
         <div>
           <span className="text-lg text-white">{post.user.nickname}</span>
