@@ -49,7 +49,6 @@ const AddPost = () => {
 
     try {
       await createPost(data)
-      console.log('투표 생성 성공:')
       document.getElementById('my_modal_2').showModal() // 투표 생성 성공 알림 모달
       mutate() // 포스트 목록 다시 불러오기
     } catch (error) {

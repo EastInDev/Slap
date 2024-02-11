@@ -122,7 +122,6 @@ export const getPosts = async (user_id) => {
 
     rows.forEach((post) => {
       const index = result.findIndex((r) => r.id === post.id)
-      console.log(result)
       if (index === -1) {
         result.push({
           id: post.id,
@@ -489,6 +488,87 @@ export const getCommentsAndReplies = async (post_id) => {
     return comments
   } catch (error) {
     console.error('댓글 조회 실패:', error)
+    return null
+  }
+}
+
+export const getMyComments = async (user_id) => {
+  unstable_noStore()
+  try {
+    const { rows } = await sql`
+      SELECT
+        c.id,
+        c.content,
+        c.created_at,
+        c.updated_at,
+        c.post_id,
+        p.title
+      FROM
+        comments c
+      LEFT JOIN
+        posts p
+      ON
+        c.post_id = p.id
+      WHERE
+        c.user_id = ${user_id}
+      ORDER BY
+        c.created_at DESC
+    `
+
+    return rows
+  } catch (error) {
+    console.error('내 댓글 조회 실패:', error)
+    return null
+  }
+}
+
+export const getMyLikes = async (user_id) => {
+  unstable_noStore()
+  try {
+    const { rows } = await sql`
+      SELECT
+        l.id,
+        l.post_id,
+        p.title
+      FROM
+        likes l
+      LEFT JOIN
+        posts p
+      ON
+        l.post_id = p.id
+      WHERE
+        l.user_id = ${user_id}
+    `
+
+    return rows
+  } catch (error) {
+    console.error('내 좋아요 조회 실패:', error)
+    return null
+  }
+}
+
+export const getMySlaps = async (user_id) => {
+  unstable_noStore()
+  try {
+    const { rows } = await sql`
+      SELECT
+        s.id,
+        s.post_id,
+        s.vote_id,
+        p.title
+      FROM
+        slaps s
+      LEFT JOIN
+        posts p
+      ON
+        s.post_id = p.id
+      WHERE
+        s.user_id = ${user_id}
+    `
+
+    return rows
+  } catch (error) {
+    console.error('내 투표 조회 실패:', error)
     return null
   }
 }

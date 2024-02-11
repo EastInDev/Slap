@@ -10,11 +10,10 @@ const defaultMenu = [
 ]
 
 const authMenu = [
-  { title: '내가 쓴 Slap!', href: '/my' },
-  { title: '내가 쓴 댓글', href: '/my' },
-  { title: '내가 좋아요한 Slap', href: '/my' },
-  { title: '즐겨찾기', href: '/my' },
-  { title: '내가 투표한 Slap', href: '/my' },
+  { title: '내가 쓴 Slap!', href: '/my/post' },
+  { title: '내가 쓴 댓글', href: '/my/comment' },
+  { title: '내가 좋아요한 Slap', href: '/my/like' },
+  { title: '내가 투표한 Slap', href: '/my/slap' },
 ]
 
 const SlapMenu = () => {

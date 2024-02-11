@@ -4,23 +4,15 @@ import { getPosts } from '@/apis/post'
 import { useSession } from 'next-auth/react'
 import useSWR from 'swr'
 
-export default function usePosts() {
+export default function useMyPosts() {
   const { data: session } = useSession()
   const { data: posts = [], ...res } = useSWR(
-    '/api/post' + session?.user?.id,
+    '/api/my/post' + session?.user?.id,
     () => getPosts(session?.user?.id),
-    {
-      revalidateIfStale: false,
-    },
   )
 
-  const getPost = (id) => {
-    return posts.find((post) => post.id === id)
-  }
-
   return {
-    posts,
+    posts: posts.filter((post) => post.user.id === session?.user?.id),
     ...res,
-    getPost,
   }
 }
