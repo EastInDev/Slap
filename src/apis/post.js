@@ -584,6 +584,9 @@ export const getCategoriesPosts = async (categoryId) => {
     return result
   } catch (error) {
     console.error('카테고리별 포스트 조회 실패:', error)
+    return null
+  }
+}
 
 export const getMyComments = async (user_id) => {
   unstable_noStore()
