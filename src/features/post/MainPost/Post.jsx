@@ -82,7 +82,6 @@ const Post = ({ post, handleVote }) => {
 
   const handleCommentSubmit = async (event, comment_id) => {
     event.preventDefault()
-    console.log('comment_id:', comment_id)
     const result = await addComment(
       newComment,
       post.id,
