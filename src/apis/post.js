@@ -186,6 +186,10 @@ export const getMyPosts = async (user_id) => {
     return rows
   } catch (error) {
     console.error('내 포스트 조회 실패:', error)
+    return null
+  }
+}
+
 export const getCountPosts = async () => {
   unstable_noStore()
   try {
