@@ -190,9 +190,11 @@ export const getCountPosts = async () => {
 
 export const getPopularPosts = async ({ page }) => {
   unstable_noStore()
+  console.log('page:', page)
+  page++
   try {
     let result = []
-    const { rows } = await sql`
+    const { rows: posts } = await sql`
       SELECT
         posts.id,
         posts.title,
@@ -202,17 +204,9 @@ export const getPopularPosts = async ({ page }) => {
         posts.category_id,
         posts.user_id,
         users.nickname,
-        votes.id AS vote_id,
-        votes.text AS vote_text,
-        votes.post_id,
-        COUNT(slaps.id) OVER (PARTITION BY votes.id) AS vote_count,
         COUNT(slaps.id) OVER (PARTITION BY posts.id) AS total_vote_count
       FROM
         posts
-      LEFT JOIN
-        votes
-      ON 
-        posts.id = votes.post_id
       LEFT JOIN
         users
       ON
@@ -220,14 +214,35 @@ export const getPopularPosts = async ({ page }) => {
       LEFT JOIN
         slaps
       ON
-        votes.id = slaps.vote_id
+        posts.id = slaps.post_id
       ORDER BY
-        total_vote_count DESC
-      LIMIT 10
+        total_vote_count DESC,
+        posts.created_at DESC
+      LIMIT 3
+      OFFSET ${(page - 1) * 3}
     `
-    rows.forEach((post) => {
-      const index = result.findIndex((r) => r.id === post.id)
 
+    const { rows: likes } = await sql`
+      SELECT post_id, user_id, COUNT(*) as like_count FROM likes
+      GROUP BY post_id, user_id
+    `
+
+    const { rows: votes } = await sql`
+      SELECT
+        votes.id,
+        votes.text,
+        votes.post_id,
+        COUNT(slaps.id) OVER (PARTITION BY votes.id) AS vote_count
+      FROM
+        votes
+      LEFT JOIN
+        slaps
+      ON
+        votes.id = slaps.vote_id
+    `
+
+    posts.forEach((post) => {
+      const index = result.findIndex((r) => r.id === post.id)
       if (index === -1) {
         result.push({
           id: post.id,
@@ -240,25 +255,17 @@ export const getPopularPosts = async ({ page }) => {
             id: post.user_id,
             nickname: post.nickname,
           },
-          isVote: false,
-          votes: post.vote_id
-            ? [
-                {
-                  id: post.vote_id,
-                  text: post.vote_text,
-                  count: post.vote_count,
-                  thisVote: false,
-                },
-              ]
-            : [],
+          votes: votes
+            .filter((vote) => vote.post_id === post.id)
+            .map((vote) => ({
+              id: vote.id,
+              text: vote.text,
+              count: vote.vote_count,
+            })),
           total_count: post.total_vote_count,
-        })
-      } else {
-        result[index].votes.push({
-          id: post.vote_id,
-          text: post.vote_text,
-          count: post.vote_count,
-          thisVote: false,
+          isLiked: likes.some((like) => like.post_id === post.id),
+          likesCount: likes.find((like) => like.post_id === post.id)
+            ?.like_count,
         })
       }
     })
@@ -272,9 +279,10 @@ export const getPopularPosts = async ({ page }) => {
 
 export const getLatestPosts = async ({ page }) => {
   unstable_noStore()
+  page++
   try {
     let result = []
-    const { rows } = await sql`
+    const { rows: posts } = await sql`
       SELECT
         posts.id,
         posts.title,
@@ -284,17 +292,9 @@ export const getLatestPosts = async ({ page }) => {
         posts.category_id,
         posts.user_id,
         users.nickname,
-        votes.id AS vote_id,
-        votes.text AS vote_text,
-        votes.post_id,
-        COUNT(slaps.id) OVER (PARTITION BY votes.id) AS vote_count,
         COUNT(slaps.id) OVER (PARTITION BY posts.id) AS total_vote_count
       FROM
         posts
-      LEFT JOIN
-        votes
-      ON  
-        posts.id = votes.post_id
       LEFT JOIN
         users
       ON
@@ -302,15 +302,34 @@ export const getLatestPosts = async ({ page }) => {
       LEFT JOIN
         slaps
       ON
-        votes.id = slaps.vote_id
+        posts.id = slaps.post_id
       ORDER BY
         posts.created_at DESC
-      LIMIT 10
+      LIMIT 3
+      OFFSET ${(page - 1) * 3}
     `
 
-    rows.forEach((post) => {
-      const index = result.findIndex((r) => r.id === post.id)
+    const { rows: likes } = await sql`
+      SELECT post_id, user_id, COUNT(*) as like_count FROM likes
+      GROUP BY post_id, user_id
+    `
 
+    const { rows: votes } = await sql`
+      SELECT
+        votes.id,
+        votes.text,
+        votes.post_id,
+        COUNT(slaps.id) OVER (PARTITION BY votes.id) AS vote_count
+      FROM
+        votes
+      LEFT JOIN
+        slaps
+      ON
+        votes.id = slaps.vote_id
+    `
+
+    posts.forEach((post) => {
+      const index = result.findIndex((r) => r.id === post.id)
       if (index === -1) {
         result.push({
           id: post.id,
@@ -323,25 +342,17 @@ export const getLatestPosts = async ({ page }) => {
             id: post.user_id,
             nickname: post.nickname,
           },
-          isVote: false,
-          votes: post.vote_id
-            ? [
-                {
-                  id: post.vote_id,
-                  text: post.vote_text,
-                  count: post.vote_count,
-                  thisVote: false,
-                },
-              ]
-            : [],
+          votes: votes
+            .filter((vote) => vote.post_id === post.id)
+            .map((vote) => ({
+              id: vote.id,
+              text: vote.text,
+              count: vote.vote_count,
+            })),
           total_count: post.total_vote_count,
-        })
-      } else {
-        result[index].votes.push({
-          id: post.vote_id,
-          text: post.vote_text,
-          count: post.vote_count,
-          thisVote: false,
+          isLiked: likes.some((like) => like.post_id === post.id),
+          likesCount: likes.find((like) => like.post_id === post.id)
+            ?.like_count,
         })
       }
     })

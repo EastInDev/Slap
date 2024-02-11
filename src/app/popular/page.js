@@ -1,23 +1,67 @@
 'use client'
 import { useCallback, useMemo } from 'react'
+import usePosts from '@/hooks/usePosts'
 import useSWR from 'swr'
 import useSWRInfinite from 'swr/infinite'
 import { getPopularPosts, getCountPosts } from '@/apis/post'
 import useInfiniteScroll from 'react-infinite-scroll-hook'
+import Post from '@/features/post/MainPost/Post'
 
 export default function Popular() {
   const { data: count = 0 } = useSWR('api/popular', () => getCountPosts())
+  const { getPost, mutate } = usePosts()
+
+  const handleVote = async (postId, voteId) => {
+    if (!session || !session.user.id) {
+      document.getElementById('NotLoginDialog').showModal()
+      return
+    }
+
+    const newPosts = produce(posts, (draft) => {
+      draft.forEach((post) => {
+        if (post.id === postId) {
+          if (!post.isVote) {
+            post.total_count++
+            post.isVote = true
+          }
+          post.votes.forEach((vote) => {
+            if (vote.id === voteId) {
+              if (!vote.thisVote) {
+                vote.count++
+                vote.thisVote = true
+              }
+            } else {
+              if (vote.thisVote) {
+                vote.count--
+                vote.thisVote = false
+              }
+            }
+          })
+        }
+      })
+    })
+
+    mutate(newPosts, { revalidate: false })
+
+    await addVote(postId, voteId, session.user.id)
+  }
 
   const getKey = useCallback((page, prevData) => {
     if (prevData && !prevData.length) return null
-    return `/api/popular?page=${page}`
+    return { keyword: `/api/popular`, page: page }
   }, [])
 
   const {
     data: posts,
     isValidating,
+    size: page,
     setSize: setPage,
-  } = useSWRInfinite(getKey, (page) => getPopularPosts({ page }))
+  } = useSWRInfinite(getKey, ({ keyword, page }) => getPopularPosts({ page }), {
+    revalidateOnFocus: false,
+    revalidateOnReconnect: false,
+    keepPreviousData: true,
+    revalidateFirstPage: false,
+  })
 
   const dataList = useMemo(() => {
     if (!posts) return []
@@ -30,7 +74,9 @@ export default function Popular() {
   const [sentryRef] = useInfiniteScroll({
     loading: isValidating,
     hasNextPage,
-    onLoadMore: () => setPage((page) => page + 1),
+    onLoadMore: () => {
+      setPage((page) => page + 1)
+    },
   })
 
   return (
@@ -43,43 +89,19 @@ export default function Popular() {
         display: 'grid',
       }}
     >
-      {dataList.map((post, i) => (
-        <div
-          key={i}
-          className={`card w-full h-[calc(calc(100dvh-100px)*0.8)] bg-base-100 shadow-xl ${
-            i === 0 ? ' mt-6' : ' mt-20'
-          }`}
-          style={{ scrollSnapAlign: 'start' }}
-        >
-          <div className="card-body">
-            <h2 className="card-title">{post.title}</h2>
-            <p>{post.content}</p>
-            {post.votes.map((vote, i) => {
-              const votePercentage =
-                (parseInt(vote.count) / (parseInt(post.total_count) || 1)) * 100
-              return (
-                <div key={i} className="mt-2 flex items-center">
-                  <button
-                    className="btn relative w-full text-left"
-                    style={{
-                      background: `linear-gradient(to right, #2563eb ${votePercentage}%, #e5e7eb ${votePercentage}%)`,
-                    }}
-                    onClick={() => handleVote(post.id, vote.id)}
-                  >
-                    <span>{vote.text}</span>
-                    <span className="px-3 py-2 ml-auto text-white bg-blue-500 rounded">
-                      {isNaN(votePercentage)
-                        ? '0.00'
-                        : votePercentage.toFixed(2)}
-                      %
-                    </span>
-                  </button>
-                </div>
-              )
-            })}
+      {dataList.map((post, i) => {
+        return (
+          <div
+            key={i}
+            className={`card w-full h-[calc(calc(100dvh-100px)*0.8)] bg-base-100 shadow-xl ${
+              i === 0 ? ' mt-6' : ' mt-20'
+            }`}
+            style={{ scrollSnapAlign: 'start' }}
+          >
+            <Post post={post} handleVote={handleVote} />
           </div>
-        </div>
-      ))}
+        )
+      })}
 
       <div
         className="skeleton mt-20 w-full h-[calc(calc(100dvh-100px)*0.8)]"
