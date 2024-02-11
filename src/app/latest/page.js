@@ -1,23 +1,73 @@
 'use client'
 import { useCallback, useMemo } from 'react'
+import { useSession } from 'next-auth/react'
+import { produce } from 'immer'
+import usePosts from '@/hooks/usePosts'
 import useSWR from 'swr'
 import useSWRInfinite from 'swr/infinite'
 import { getLatestPosts, getCountPosts } from '@/apis/post'
 import useInfiniteScroll from 'react-infinite-scroll-hook'
+import Post from '@/features/post/MainPost/Post'
+import { addVote } from '@/apis/post'
 
 export default function Latest() {
+  const { data: session } = useSession()
   const { data: count = 0 } = useSWR('api/latest', () => getCountPosts())
+
+  const handleVote = async (postId, voteId) => {
+    if (!session || !session.user.id) {
+      document.getElementById('NotLoginDialog').showModal()
+      return
+    }
+
+    const newPosts = produce(posts, (draft) => {
+      draft.forEach((page) => {
+        page.forEach((post) => {
+          if (post.id === postId) {
+            if (!post.isVote) {
+              post.total_count++
+              post.isVote = true
+            }
+            post.votes.forEach((vote) => {
+              if (vote.id === voteId) {
+                if (!vote.thisVote) {
+                  vote.count++
+                  vote.thisVote = true
+                }
+              } else {
+                if (vote.thisVote) {
+                  vote.count--
+                  vote.thisVote = false
+                }
+              }
+            })
+          }
+        })
+      })
+    })
+
+    mutate(newPosts, { revalidate: false })
+
+    await addVote(postId, voteId, session.user.id)
+  }
 
   const getKey = useCallback((page, prevData) => {
     if (prevData && !prevData.length) return null
-    return `/api/latest?page=${page}`
+    return { keyword: `/api/popular`, page: page }
   }, [])
 
   const {
     data: posts,
     isValidating,
+    size: page,
     setSize: setPage,
-  } = useSWRInfinite(getKey, (page) => getLatestPosts({ page }))
+    mutate,
+  } = useSWRInfinite(getKey, ({ keyword, page }) => getPopularPosts({ page }), {
+    revalidateOnFocus: false,
+    revalidateOnReconnect: false,
+    keepPreviousData: true,
+    revalidateFirstPage: false,
+  })
 
   const dataList = useMemo(() => {
     if (!posts) return []
@@ -51,33 +101,7 @@ export default function Latest() {
           }`}
           style={{ scrollSnapAlign: 'start' }}
         >
-          <div className="card-body">
-            <h2 className="card-title">{post.title}</h2>
-            <p>{post.content}</p>
-            {post.votes.map((vote, i) => {
-              const votePercentage =
-                (parseInt(vote.count) / (parseInt(post.total_count) || 1)) * 100
-              return (
-                <div key={post.id + vote.id} className="mt-2 flex items-center">
-                  <button
-                    className="btn relative w-full text-left"
-                    style={{
-                      background: `linear-gradient(to right, #2563eb ${votePercentage}%, #e5e7eb ${votePercentage}%)`,
-                    }}
-                    onClick={() => handleVote(post.id, vote.id)}
-                  >
-                    <span>{vote.text}</span>
-                    <span className="px-3 py-2 ml-auto text-white bg-blue-500 rounded">
-                      {isNaN(votePercentage)
-                        ? '0.00'
-                        : votePercentage.toFixed(2)}
-                      %
-                    </span>
-                  </button>
-                </div>
-              )
-            })}
-          </div>
+          <Post post={post} handleVote={handleVote} />
         </div>
       ))}
 

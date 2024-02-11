@@ -122,7 +122,6 @@ export const getPosts = async (user_id) => {
 
     rows.forEach((post) => {
       const index = result.findIndex((r) => r.id === post.id)
-      console.log(result)
       if (index === -1) {
         result.push({
           id: post.id,
@@ -191,9 +190,11 @@ export const getCountPosts = async () => {
 
 export const getPopularPosts = async ({ page }) => {
   unstable_noStore()
+  console.time('getPopularPosts')
+  page++
   try {
     let result = []
-    const { rows } = await sql`
+    const { rows: posts } = await sql`
       SELECT
         posts.id,
         posts.title,
@@ -203,17 +204,9 @@ export const getPopularPosts = async ({ page }) => {
         posts.category_id,
         posts.user_id,
         users.nickname,
-        votes.id AS vote_id,
-        votes.text AS vote_text,
-        votes.post_id,
-        COUNT(slaps.id) OVER (PARTITION BY votes.id) AS vote_count,
         COUNT(slaps.id) OVER (PARTITION BY posts.id) AS total_vote_count
       FROM
         posts
-      LEFT JOIN
-        votes
-      ON 
-        posts.id = votes.post_id
       LEFT JOIN
         users
       ON
@@ -221,14 +214,35 @@ export const getPopularPosts = async ({ page }) => {
       LEFT JOIN
         slaps
       ON
-        votes.id = slaps.vote_id
+        posts.id = slaps.post_id
       ORDER BY
-        total_vote_count DESC
-      LIMIT 10
+        total_vote_count DESC,
+        posts.created_at DESC
+      LIMIT 3
+      OFFSET ${(page - 1) * 3}
     `
-    rows.forEach((post) => {
-      const index = result.findIndex((r) => r.id === post.id)
 
+    const { rows: likes } = await sql`
+      SELECT post_id, user_id, COUNT(*) as like_count FROM likes
+      GROUP BY post_id, user_id
+    `
+
+    const { rows: votes } = await sql`
+      SELECT
+        votes.id,
+        votes.text,
+        votes.post_id,
+        COUNT(slaps.id) OVER (PARTITION BY votes.id) AS vote_count
+      FROM
+        votes
+      LEFT JOIN
+        slaps
+      ON
+        votes.id = slaps.vote_id
+    `
+
+    posts.forEach((post) => {
+      const index = result.findIndex((r) => r.id === post.id)
       if (index === -1) {
         result.push({
           id: post.id,
@@ -241,29 +255,22 @@ export const getPopularPosts = async ({ page }) => {
             id: post.user_id,
             nickname: post.nickname,
           },
-          isVote: false,
-          votes: post.vote_id
-            ? [
-                {
-                  id: post.vote_id,
-                  text: post.vote_text,
-                  count: post.vote_count,
-                  thisVote: false,
-                },
-              ]
-            : [],
+          votes: votes
+            .filter((vote) => vote.post_id === post.id)
+            .map((vote) => ({
+              id: vote.id,
+              text: vote.text,
+              count: vote.vote_count,
+            })),
           total_count: post.total_vote_count,
-        })
-      } else {
-        result[index].votes.push({
-          id: post.vote_id,
-          text: post.vote_text,
-          count: post.vote_count,
-          thisVote: false,
+          isLiked: likes.some((like) => like.post_id === post.id),
+          likesCount: likes.find((like) => like.post_id === post.id)
+            ?.like_count,
         })
       }
     })
 
+    console.timeEnd('getPopularPosts')
     return result
   } catch (error) {
     console.error('인기 포스트 조회 실패:', error)
@@ -273,9 +280,10 @@ export const getPopularPosts = async ({ page }) => {
 
 export const getLatestPosts = async ({ page }) => {
   unstable_noStore()
+  page++
   try {
     let result = []
-    const { rows } = await sql`
+    const { rows: posts } = await sql`
       SELECT
         posts.id,
         posts.title,
@@ -285,17 +293,9 @@ export const getLatestPosts = async ({ page }) => {
         posts.category_id,
         posts.user_id,
         users.nickname,
-        votes.id AS vote_id,
-        votes.text AS vote_text,
-        votes.post_id,
-        COUNT(slaps.id) OVER (PARTITION BY votes.id) AS vote_count,
         COUNT(slaps.id) OVER (PARTITION BY posts.id) AS total_vote_count
       FROM
         posts
-      LEFT JOIN
-        votes
-      ON  
-        posts.id = votes.post_id
       LEFT JOIN
         users
       ON
@@ -303,15 +303,34 @@ export const getLatestPosts = async ({ page }) => {
       LEFT JOIN
         slaps
       ON
-        votes.id = slaps.vote_id
+        posts.id = slaps.post_id
       ORDER BY
         posts.created_at DESC
-      LIMIT 10
+      LIMIT 3
+      OFFSET ${(page - 1) * 3}
     `
 
-    rows.forEach((post) => {
-      const index = result.findIndex((r) => r.id === post.id)
+    const { rows: likes } = await sql`
+      SELECT post_id, user_id, COUNT(*) as like_count FROM likes
+      GROUP BY post_id, user_id
+    `
 
+    const { rows: votes } = await sql`
+      SELECT
+        votes.id,
+        votes.text,
+        votes.post_id,
+        COUNT(slaps.id) OVER (PARTITION BY votes.id) AS vote_count
+      FROM
+        votes
+      LEFT JOIN
+        slaps
+      ON
+        votes.id = slaps.vote_id
+    `
+
+    posts.forEach((post) => {
+      const index = result.findIndex((r) => r.id === post.id)
       if (index === -1) {
         result.push({
           id: post.id,
@@ -324,25 +343,17 @@ export const getLatestPosts = async ({ page }) => {
             id: post.user_id,
             nickname: post.nickname,
           },
-          isVote: false,
-          votes: post.vote_id
-            ? [
-                {
-                  id: post.vote_id,
-                  text: post.vote_text,
-                  count: post.vote_count,
-                  thisVote: false,
-                },
-              ]
-            : [],
+          votes: votes
+            .filter((vote) => vote.post_id === post.id)
+            .map((vote) => ({
+              id: vote.id,
+              text: vote.text,
+              count: vote.vote_count,
+            })),
           total_count: post.total_vote_count,
-        })
-      } else {
-        result[index].votes.push({
-          id: post.vote_id,
-          text: post.vote_text,
-          count: post.vote_count,
-          thisVote: false,
+          isLiked: likes.some((like) => like.post_id === post.id),
+          likesCount: likes.find((like) => like.post_id === post.id)
+            ?.like_count,
         })
       }
     })
@@ -573,6 +584,84 @@ export const getCategoriesPosts = async (categoryId) => {
     return result
   } catch (error) {
     console.error('카테고리별 포스트 조회 실패:', error)
+
+export const getMyComments = async (user_id) => {
+  unstable_noStore()
+  try {
+    const { rows } = await sql`
+      SELECT
+        c.id,
+        c.content,
+        c.created_at,
+        c.updated_at,
+        c.post_id,
+        p.title
+      FROM
+        comments c
+      LEFT JOIN
+        posts p
+      ON
+        c.post_id = p.id
+      WHERE
+        c.user_id = ${user_id}
+      ORDER BY
+        c.created_at DESC
+    `
+
+    return rows
+  } catch (error) {
+    console.error('내 댓글 조회 실패:', error)
+    return null
+  }
+}
+
+export const getMyLikes = async (user_id) => {
+  unstable_noStore()
+  try {
+    const { rows } = await sql`
+      SELECT
+        l.id,
+        l.post_id,
+        p.title
+      FROM
+        likes l
+      LEFT JOIN
+        posts p
+      ON
+        l.post_id = p.id
+      WHERE
+        l.user_id = ${user_id}
+    `
+
+    return rows
+  } catch (error) {
+    console.error('내 좋아요 조회 실패:', error)
+    return null
+  }
+}
+
+export const getMySlaps = async (user_id) => {
+  unstable_noStore()
+  try {
+    const { rows } = await sql`
+      SELECT
+        s.id,
+        s.post_id,
+        s.vote_id,
+        p.title
+      FROM
+        slaps s
+      LEFT JOIN
+        posts p
+      ON
+        s.post_id = p.id
+      WHERE
+        s.user_id = ${user_id}
+    `
+
+    return rows
+  } catch (error) {
+    console.error('내 투표 조회 실패:', error)
     return null
   }
 }

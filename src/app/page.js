@@ -12,10 +12,12 @@ export default function Home() {
   }
 
   return (
+
     <>
       <Categories onCategorySelect={handleCategorySelect} />
       <br></br>
       <MainPost selectedCategoryId={selectedCategoryId} />
     </>
+
   )
 }
