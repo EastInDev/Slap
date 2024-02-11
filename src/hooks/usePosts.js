@@ -1,4 +1,3 @@
-
 'use client'
 
 import { getPosts, getCategoriesPosts } from '@/apis/post'
