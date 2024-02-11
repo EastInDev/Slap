@@ -46,7 +46,7 @@ const CommentDialog = ({
           <h3 className="font-bold text-lg mt-4 mb-3">투표 정보</h3>
           <div className="flex justify-between items-start">
             <div>
-              <span className="text-lg text-white">{post.user.nickname}</span>
+              <span className="text-lg">{post.user.nickname}</span>
               <span className="text-sm text-gray-500 ml-2">
                 {timeAgo(post.created_at)}
               </span>
