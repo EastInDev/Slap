@@ -1,3 +1,5 @@
+'use client'
+
 import { getPosts } from '@/apis/post'
 import { useSession } from 'next-auth/react'
 import useSWR from 'swr'

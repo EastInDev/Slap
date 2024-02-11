@@ -1,3 +1,5 @@
+'use client'
+
 import { getPosts } from '@/apis/post'
 import { useSession } from 'next-auth/react'
 import useSWR from 'swr'
@@ -12,8 +14,13 @@ export default function usePosts() {
     },
   )
 
+  const getPost = (id) => {
+    return posts.find((post) => post.id === id)
+  }
+
   return {
     posts,
     ...res,
+    getPost,
   }
 }

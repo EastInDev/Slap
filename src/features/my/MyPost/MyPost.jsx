@@ -2,7 +2,7 @@
 
 import useMyPosts from '@/hooks/useMyPosts'
 import { useSession } from 'next-auth/react'
-import Post from '../MainPost/Post'
+import Post from '../../post/MainPost/Post'
 import NotLoginDialog from '@/components/Dialog/NotLoginDialog'
 import { produce } from 'immer'
 import { addVote } from '@/apis/post'
