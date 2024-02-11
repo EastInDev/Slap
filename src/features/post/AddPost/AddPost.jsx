@@ -3,6 +3,7 @@ import DropdownCategories from '@/components/form/DropdownCategories/DropdownCat
 import { MinusSquare, X } from 'lucide-react'
 import { createPost } from '@/apis/post'
 import { useSession } from 'next-auth/react'
+import usePosts from '@/hooks/usePosts'
 import SuccessAddPostDialog from '@/components/Dialog/SuccessAddPostDialog'
 
 const AddPost = () => {
@@ -12,6 +13,7 @@ const AddPost = () => {
   const [errorMessage, setErrorMessage] = useState('')
   const [category, setCategory] = useState('')
   const [content, setContent] = useState('')
+  const { mutate } = usePosts()
 
   const handleVoteSubmit = async (event) => {
     event.preventDefault() // 이벤트 기본 동작을 막음
@@ -35,8 +37,8 @@ const AddPost = () => {
       return
     }
 
-    if (voteOptions.every((option) => option.trim() === '')) {
-      setErrorMessage('최소 한 개의 투표 항목을 입력해주세요!')
+    if (voteOptions.filter((option) => option.trim() !== '').length < 2) {
+      setErrorMessage('최소 두 개의 투표 항목을 입력해주세요!')
       return
     }
 
@@ -49,6 +51,7 @@ const AddPost = () => {
       await createPost(data)
       console.log('투표 생성 성공:')
       document.getElementById('my_modal_2').showModal() // 투표 생성 성공 알림 모달
+      mutate() // 포스트 목록 다시 불러오기
     } catch (error) {
       console.error('투표 생성 실패:', error)
     }

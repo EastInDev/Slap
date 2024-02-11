@@ -30,7 +30,7 @@ const Intro = () => {
   }, [])
 
   return (
-    <div className="intro fixed z-10 left-0 top-0 w-full h-screen bg-zinc-900 transition-all 2s">
+    <div className="intro fixed z-50 left-0 top-0 w-full h-screen bg-zinc-900 transition-all 2s">
       <h1 className="logo-header absolute top-1/2 left-1/2 -translate-y-2/4 -translate-x-2/4 text-white">
         <span className="intro-logo">Sl</span>
         <span className="intro-logo">ap!</span>
