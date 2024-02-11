@@ -147,6 +147,8 @@ const Post = ({ post, handleVote }) => {
         handleCommentSubmit={handleCommentSubmit}
         setNewComment={setNewComment}
         timeAgo={timeAgo}
+        handleVote={handleVote}
+        formatVoteCount={formatVoteCount}
       />
     </div>
   )
