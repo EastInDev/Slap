@@ -83,7 +83,7 @@ const CommentDialog = ({
             flex: 1,
             display: 'flex',
             flexDirection: 'column',
-            justifyContent: 'space-between',
+            // justifyContent: 'space-between',
           }}
         >
           <div style={{ padding: '1em 0' }}>
@@ -93,7 +93,7 @@ const CommentDialog = ({
             <hr></hr>
           </div>
 
-          <div style={{ height: '340px', overflowY: 'auto' }}>
+          <div style={{ height: '440px', overflowY: 'auto' }}>
             {comments &&
               comments.map((comment) => (
                 <div key={comment.id}>
